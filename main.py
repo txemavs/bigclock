@@ -26,6 +26,8 @@ def alert(msg="(!)", color=(255,255,255), bg=(255,0,0)):
         bar.write()
     bar.br()
 
+    
+    
 class Myself(nabla.Thing):
 
     cycle = 0
@@ -83,8 +85,6 @@ class Myself(nabla.Thing):
                 self.value_set("light", v)
                 bar.power=v/102.4 if v<124 else 1.0
             self.check_sensors()
-            
-     
         self.tt.check_msg()
         time.sleep_ms(500)
 
@@ -97,7 +97,6 @@ class Myself(nabla.Thing):
             bar.message("     \n-> ", color=(255,255,255), wait=0)
             bar.message(msg)
             bar.message(" \n     ", color=(255,255,255))
-            
         elif topic==b"%s/alert" % (me):
             alert(msg[0:5])
         gc.collect()
@@ -127,13 +126,13 @@ class Myself(nabla.Thing):
         v = self.value
         bar.message("Temperatura %s%sC, humedad %s%%, luz %s%%" % (v["temp"],u'\xba',v["humi"],int(v["light"]/10.24)))
 
+        
 
 bar.wait=25
 
 try:
-    
     connect()
-    me = Myself("gps.gglas.com", i2c=None)
+    me = Myself("mqtt.service.com", i2c=None)
     me.run()
 except Exception as e:
     alert("ERROR")
