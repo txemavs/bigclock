@@ -7,8 +7,9 @@ Materials:
 * One ESP8266 microcontroller with micropython and umqtt installed
 * A LDR light sensor
 * A DHT11 temp sensor
-* 150 neopixel LEDs
-* a 5V 10A power source
+* 30 x 5 neopixel LED matrix
+* A 5V 10A power source or a PC PSU
 
-Letters are 5x5 dots, 6 dots width with the spacing, so we need a 30x5 dot matrix 
 A 5m 150 LED strip makes a 110x17 cm display.
+Letters are 5x5 dots, 6 dots width with the spacing, so we need a 30x5 dot matrix.
+
