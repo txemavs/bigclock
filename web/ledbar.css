@@ -1,0 +1,144 @@
+html {
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font: 16px / 1 sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  justify-content: center;
+  padding: 1em;
+  color:#fff;
+  background-color: #000;
+  font-family: sans-serif;
+}
+
+#screen {
+  width:300px;
+  margin:auto;
+  align-content: center;
+  justify-content: center;
+}
+
+
+h1 {
+  margin: auto;
+  padding: 10px;
+  text-align:center
+}
+
+#ledbar {
+  height: 50px;
+  width: 300px;
+  font: 16px / 1 monospace;
+  line-height:50px;
+  margin: 10px auto 5px auto;
+}
+
+#panel {
+  height: 100%;
+  width: 100%;
+  border-radius: 1px;
+  margin-bottom: 1em;
+}
+
+#analog{
+  font: 16px / 1 monospace;
+}
+
+#output{
+ height:150px;
+ overflow-y:scroll;
+ background-color:rgb(2,2,2)
+}
+
+h3 {
+  margin: auto;
+  text-align: center;
+  padding-top: 1em;
+}
+
+img {
+  height: 200px;
+  width: 200px;
+}
+
+.sliders {
+  margin: auto;
+  padding: 1em;
+  justify-content: flex-start;
+  align-content: center;
+}
+
+form {
+  margin: auto;
+
+}
+
+input {
+  width: 100%;
+  margin: 5px 0px;
+  padding:0;
+  border:0px none;
+
+}
+
+#msg {
+
+  color:white;
+  background-color:  black;
+  border-radius: 3px;
+  border-style: solid;
+  border-width: thin;
+  width:300px;
+  height:100px;
+  font: 24px / 1 sans-serif;
+ 
+}
+
+.buttons {
+  width: 300px;
+  display:flex;
+  flex-flow: column nowrap;
+  margin:5px 0;
+  padding:0;
+  
+  background:#222;
+  
+}
+
+.button-row {
+  width: 100%;
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+.button {
+ width: 100%;
+ display: flex;
+ flex-flow: row nowrap;
+ padding:2px;  
+}
+
+.button button{
+ height:50px;
+ width: 100%;
+ font-weight:bold;
+ font: 20px / 1 monospace;
+}
+
+.range{
+padding:5px 0;
+box-sizing: border-box;
+margin:0px
+   
+}
+
+
+.hue{ background-image: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet); }
+.range.sat { background-color:  transparent; }
+.sat { background-image: linear-gradient(to right, #494949 0%, transparent 100%), linear-gradient(to right, #fff 0%, transparent 0%); }
+.lgt { background-image: linear-gradient(to left, #fff 0%, transparent 100%), linear-gradient(to right, #000 0%, transparent 0%); }
+

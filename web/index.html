@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+  <head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>LED BAR</title>
+    <link rel="stylesheet" href="ledbar.css">
+    <script src="paho-mqtt-min.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div id='screen'>
+      <h1>LEDBAR</h1>
+
+      <form>
+        <textarea id="msg" onkeydown="MQTT.publish(this)"></textarea>
+        <div class="buttons">
+          <div class="button-row">
+            <div class="button"><button id="fg">INK</button></div>
+            <div class="button"><button id="bg">BACK</button></div>
+            <div class="button"><button id="fx">FX</button></div>
+            <div class="button"><button id="fill">FILL</button></div>
+            <div class="button"><button id="send">SEND</button></div>
+          </div>
+        </div>  
+        <div class="range"><div class="lgt"><input id="lgt" type="range" min="0" max="100" value="50"></div></div>
+        <div class="range"><div class="hue"><input id="hue" type="range" min="0" max="300" value="150"></div></div>
+        <div class="range sat">
+          <div class="sat"><input id="sat" type="range" min="0" max="100" value="50"></div>
+        </div>
+      </form>
+      <div id="ledbar">
+        <div id="panel">
+          <div id="analog"></div>
+        </div>
+      </div>
+
+      <pre id="output"></pre>
+    </div>
+
+
+<script>
+
+
+var element = function(x) {return document.getElementById(x)}
+
+var UI = {
+  "sel_color": "color_fg",
+  "color_fg": {"hue":150,"sat":100,"lgt":50},
+  "color_bg": {"hue":150,"sat":50,"lgt":0},
+  "output": element("output"),
+  "panel": element('panel'),
+  "analog": element('analog'),
+  "range_sat": document.querySelector('.range.sat'),
+}
+
+UI.update = function () {
+    current = UI[UI.sel_color]
+    xcolor = RGB(current.hue, current.sat, current.lgt)
+    UI.range_sat.style.backgroundColor = HSL(current)
+    UI.panel.style.backgroundColor = HSL(UI.color_bg)
+    UI.panel.style.color = HSL(UI.color_fg)
+  }
+
+
+UI.onButtonColor = function(e) { 
+  var name = this.id
+  event.preventDefault();
+  if (name=="fill") { 
+    color = UI.color_bg
+    rgb = RGB(color["hue"],color["sat"],color["lgt"])
+    MQTT.send(T+"/color", ""+rgb)
+    name="bg"
+  }
+  
+  sel = "color_"+name
+  color = UI[sel]
+  rgb = RGB(color["hue"],color["sat"],color["lgt"])
+
+  if (UI.sel_color==sel) {
+    if (this.id=="fg") { MQTT.send(T+"/foreground", ""+rgb)}
+    else if (this.id=="bg") { MQTT.send(T+"/background", ""+rgb)}
+  
+  }
+  
+  UI.sel_color = sel;
+
+  element("hue").value = color["hue"]
+  element("sat").value = color["sat"]
+  element("lgt").value = color["lgt"]
+  UI.update();
+  
+  return false;
+}
+
+
+UI.onButtonFX = function(e) { 
+  var name = this.id
+  event.preventDefault();
+  MQTT.send(T+"/fx", ""+parseInt(Math.random()*30)+",0")  
+  return false;
+}
+
+
+UI.onComponent = function(e) { 
+  UI[UI.sel_color][this.id] = this.value; 
+  UI.update();
+}
+
+// Message Queue Telemetry Transport
+M = "17a82d00"
+T = "thing/"+M
+
+var MQTT = {
+  "thing": T,
+  "name": "WEB_"+Math.floor(Math.random() * 65535),
+  "broker": 'gps.gglas.com',
+  "connected":false
+}
+
+
+MQTT.send = function(topic, payload) {
+
+  if (!MQTT.connected) { 
+    console.log("NOT CONNECTED!")
+    return 
+  }
+  msg = new Paho.MQTT.Message(payload);
+  msg.destinationName = T+"/service";
+  msg.topic = topic
+  MQTT.client.send(msg);
+  console.log("<-mqtt:"+topic+" "+payload)
+
+}
+
+
+MQTT.publish = function(ele) {
+    if(event.keyCode === 13) {
+      MQTT.send(T+"/service", ele.value)
+      event.preventDefault();
+      return false;
+    }
+}
+
+MQTT.client = new Paho.MQTT.Client(MQTT.broker, Number(1884), MQTT.name);
+
+MQTT.onConnect = function() {
+  now=new Date ()
+  MQTT.connected=true
+  MQTT.client.subscribe(T+"/service");
+  MQTT.client.subscribe("info/"+M+"/#");
+  MQTT.send(T+"/service",MQTT.name+" connected!")
+  MQTT.send(T+"/clock/offset",""+(-now.getTimezoneOffset() * 60))
+
+}
+
+MQTT.client.onConnectionLost = function(responseObject) {
+  MQTT.connected=false;
+  if (responseObject.errorCode !== 0) {
+    console.log("onConnectionLost:"+responseObject.errorMessage);
+  }
+}
+
+MQTT.client.onMessageArrived = function(message) {
+  console.log(message)
+  if (message.topic=="info/"+M+"/light") {
+    var luxp =parseInt(255*parseInt(message.payloadString)/1024)
+    UI.analog.innerHTML ='Luz '+parseInt(luxp*100/255.0)+"%"
+    UI.output.style.backgroundColor="rgb("+luxp+","+luxp+","+luxp+")"
+  }
+  UI.output.innerHTML +='\n'+message.topic+": "+message.payloadString
+};
+
+
+
+
+// Utility
+
+
+function HSL(x) { 
+  return `hsl(${x.hue}, ${x.sat}%, ${x.lgt}%)` 
+}
+
+
+function RGB(h,s,l) {
+  h /= 60.0; s /= 100.0; l /= 100.0;
+  var c = (1-Math.abs(2*l-1))*s, t = c*(1-Math.abs(h%2-1)), m = l-c/2, r = g = b = 0;
+  if (h<1) {r=c;g=t} else if(h<2) {r=t;g=c} else if (h<3) {g=c;b=t} 
+  else if(h<4) {g=t;b=c;} else if(h<5) {r=t;b=c;} else {r=c;b=t;}
+  return [Math.round(255*(r+m)), Math.round(255*(g+m)), Math.round(255*(b+m))];
+}
+
+
+function bind(elem, evt, call) {
+  element(elem).addEventListener(evt, call)
+}
+
+
+
+// Run
+document.addEventListener('DOMContentLoaded', function() {
+  
+  bind('hue', 'input', UI.onComponent)
+  bind('sat', 'input', UI.onComponent)
+  bind('lgt', 'input', UI.onComponent)
+  bind('fg', 'click', UI.onButtonColor)
+  bind('bg', 'click', UI.onButtonColor)
+  bind('fx', 'click', UI.onButtonFX)
+  bind('fill', 'click', UI.onButtonColor)
+  bind('send', 'click', function(e) { 
+      MQTT.send(T+"/service", element("msg").value)
+      event.preventDefault();
+      return false;}
+    )
+  
+  UI.update();
+  MQTT.client.connect({
+    //userName:"",
+    //password:"",
+    onSuccess:MQTT.onConnect
+  });
+
+})
+</script></body></html>
