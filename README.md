@@ -10,4 +10,5 @@ Materials:
 * 150 neopixel LEDs
 * a 5V 10A power source
 
-A 60 LED/m strip makes a 110x17 cm matrix
+Letters are 5x5 dots, 6 dots width with the spacing, so we need a 30x5 dot matrix 
+A 5m 150 LED strip makes a 110x17 cm display.
